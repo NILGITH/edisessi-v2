@@ -1,0 +1,21 @@
+{
+  "name": "edisessi-v2",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "import:ancien-site": "node scripts/import-ancien-site.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.2.17",
+    "formidable": "^3.5.2",
+    "next": "^14.2.35",
+    "pg": "^8.13.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.33.5"
+  }
+}

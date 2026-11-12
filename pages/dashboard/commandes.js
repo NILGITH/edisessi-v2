@@ -1,0 +1,26 @@
+import Link from 'next/link'; import Admin, { Csrf, money, day } from '../../components/Admin'; import { ORDER_STATUS } from '../../lib/entities';
+export async function getServerSideProps(ctx) {
+  const { requireAdmin } = require('../../lib/auth'); const a = await requireAdmin(ctx); if (a.redirect) return a;
+  const { q, one, plain } = require('../../lib/db'); const tab = ctx.query.tab === 'abandon' ? 'abandon' : 'ok'; const st = ORDER_STATUS.find((s) => s[0] === ctx.query.st) ? ctx.query.st : '';
+  const order = ctx.query.id ? await one('select * from orders where id=$1', [Number(ctx.query.id) || 0]) : null;
+  const cond = tab === 'abandon' ? "status='en_attente_paiement'" : "status<>'en_attente_paiement'" + (st ? ` and status='${st}'` : '');
+  const n = await one("select count(*) filter (where status<>'en_attente_paiement')::int ok, count(*) filter (where status='en_attente_paiement')::int ab from orders");
+  return { props: plain({ user: a.user, tab, st, n, order, rows: await q(`select id,number,created_at,last_name,first_name,phone,country,total,status,payment_method from orders where ${cond} order by created_at desc limit 300`) }) };
+}
+const lab = (s) => (ORDER_STATUS.find((x) => x[0] === s) || [0, s])[1];
+export default function Orders({ user, tab, st, n, order, rows }) {
+  if (order) { const wa = 'https://wa.me/' + String(order.phone).replace(/\D/g, '');
+    return (<Admin user={user} title={'Commande ' + order.number} actions={<Link href="/dashboard/commandes" className="btn ghost sm">← Retour</Link>}><div className="two top">
+      <div className="panel pad"><h3>Articles</h3>{(order.items || []).map((l, i) => <div key={i} className="mline"><img src={l.image} alt="" /><span>{l.name_fr}{l.size ? ` · taille ${l.size}` : ''} × {l.qty}</span><b>{money(l.total)}</b></div>)}
+        <div className="totals"><div><span>Sous-total</span><b>{money(order.subtotal)}</b></div><div><span>Réductions {order.promo_code ? `(${order.promo_code})` : ''}</span><b>− {money(order.discount)}</b></div><div><span>Livraison · {order.zone_name}</span><b>{money(order.shipping)}</b></div><div className="tot"><span>Total</span><b>{money(order.total)}</b></div></div></div>
+      <div><div className="panel pad"><h3>Client</h3><p><b>{order.last_name} {order.first_name}</b></p><p>{order.phone} · <a className="lnk" href={wa} target="_blank" rel="noreferrer">WhatsApp</a></p>{order.email && <p>{order.email}</p>}<p>{[order.address, order.city, order.country].filter(Boolean).join(', ')}</p>{order.measurements && <p><b>Mesures :</b> {order.measurements}</p>}{order.notes && <p><b>Notes :</b> {order.notes}</p>}<p className="mut">Paiement : {order.payment_method}{order.payment_ref ? ' · réf. ' + order.payment_ref : ''} · {day(order.created_at)}</p></div>
+        <form className="panel pad aform one" method="post" action="/api/admin/action"><Csrf user={user} /><input type="hidden" name="do" value="order" /><input type="hidden" name="id" value={order.id} /><h3>Suivi</h3>
+          <div className="fld wide"><label>Statut</label><select name="status" defaultValue={order.status}>{ORDER_STATUS.map((s) => <option key={s[0]} value={s[0]}>{s[1]}</option>)}</select></div>
+          <div className="fld wide"><label>Message de suivi visible par la cliente (transporteur, n° de colis…)</label><textarea name="tracking_note" rows="3" defaultValue={order.tracking_note || ''} /></div><button className="btn gold">Mettre à jour</button></form></div></div></Admin>); }
+  return (<Admin user={user} title="Gestion des Commandes" actions={<a className="btn ghost sm" href="/api/admin/export?what=orders">Exporter (Excel/CSV)</a>}>
+    <div className="tabs"><Link href="/dashboard/commandes" className={tab === 'ok' ? 'on' : ''}>Commandes finalisées <b>{n.ok}</b></Link><Link href="/dashboard/commandes?tab=abandon" className={tab === 'abandon' ? 'on' : ''}>En attente de paiement / abandonnées <b>{n.ab}</b></Link></div>
+    <div className="panel">{tab === 'ok' && <div className="panel-h"><form method="get"><select name="st" defaultValue={st} onChange={(e) => e.target.form.submit()}><option value="">Tous les statuts</option>{ORDER_STATUS.slice(1).map((s) => <option key={s[0]} value={s[0]}>{s[1]}</option>)}</select></form></div>}
+      <div className="scroll"><table className="atbl"><thead><tr><th>N° Commande</th><th>Date</th><th>Client</th><th>Pays</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead><tbody>{rows.map((o) => <tr key={o.id}><td><Link href={'/dashboard/commandes?id=' + o.id}><b>{o.number}</b></Link></td><td>{day(o.created_at)}</td><td>{o.last_name} {o.first_name}<br /><small>{o.phone}</small></td><td>{o.country}</td><td>{money(o.total)}</td><td><span className={'st ' + o.status}>{lab(o.status)}</span></td>
+        <td className="acts"><Link href={'/dashboard/commandes?id=' + o.id} className="btn ghost sm">Ouvrir</Link>{tab === 'abandon' && <a className="btn gold sm" target="_blank" rel="noreferrer" href={`https://wa.me/${String(o.phone).replace(/\D/g, '')}?text=${encodeURIComponent(`Bonjour ${o.first_name || ''}, votre commande EDI SESSI ${o.number} vous attend. Pouvons-nous vous aider à la finaliser ?`)}`}>Relancer</a>}</td></tr>)}</tbody></table></div>
+      {!rows.length && <p className="mut pad">Aucune commande à afficher.</p>}</div></Admin>);
+}

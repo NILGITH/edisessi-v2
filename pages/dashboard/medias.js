@@ -1,0 +1,8 @@
+import Admin, { Csrf } from '../../components/Admin';
+export async function getServerSideProps(ctx) { const { requireAdmin } = require('../../lib/auth'); const a = await requireAdmin(ctx); if (a.redirect) return a; const { q, plain } = require('../../lib/db'); return { props: plain({ user: a.user, media: await q('select * from media order by id desc limit 400') }) }; }
+export default function Media({ user, media }) {
+  return (<Admin user={user} title="Médiathèque"><form className="panel pad row" method="post" encType="multipart/form-data" action="/api/admin/upload"><Csrf user={user} /><input type="file" name="files" accept="image/*" multiple required /><button className="btn gold">Envoyer les images</button><span className="mut xs">Compressées et redimensionnées automatiquement (12 Mo max par image).</span></form>
+    <div className="mediag">{media.map((m) => <div key={m.id} className="mediac"><img src={m.url} alt={m.name} loading="lazy" /><input readOnly value={m.url} onFocus={(e) => e.target.select()} aria-label="Adresse de l’image" /><div className="row"><button type="button" className="btn ghost sm" onClick={() => navigator.clipboard && navigator.clipboard.writeText(m.url)}>Copier l’adresse</button>
+      <form method="post" action="/api/admin/action" onSubmit={(e) => { if (!window.confirm('Retirer cette image de la médiathèque ?')) e.preventDefault(); }}><Csrf user={user} /><input type="hidden" name="do" value="media-delete" /><input type="hidden" name="id" value={m.id} /><button className="btn red sm">Retirer</button></form></div></div>)}</div>
+    {!media.length && <p className="mut pad">Aucune image pour le moment. Les images envoyées depuis les fiches produits et les pages apparaissent aussi ici.</p>}</Admin>);
+}
