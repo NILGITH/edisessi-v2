@@ -7,7 +7,7 @@ export default function Admin({ user, title, children, actions }) {
     <aside className={'adm-side' + (open ? ' open' : '')}><div className="adm-logo">EDI SESSI</div>
       {item('/dashboard', 'Vue d’ensemble')}{item('/dashboard/commandes', 'Commandes')}
       {GROUPS.map((g) => <div key={g}><h5>{g}</h5>{Object.values(E).filter((e) => e.group === g && !e.hidden).map((e) => item('/dashboard/e/' + e.table, e.label))}{g === 'Contenus' && item('/dashboard/medias', 'Médiathèque')}{g === 'Ventes' && item('/dashboard/rapports', 'Rapports')}{g === 'Réglages' && item('/dashboard/parametres', 'Paramètres du site')}</div>)}
-      <div className="adm-user"><b>{user.name || user.email}</b><span>Rôle : {user.role}</span><a href="/" target="_blank" rel="noreferrer">Voir le site ↗</a><a href="/api/auth/logout">Déconnexion</a></div></aside>
+      <div className="adm-user"><b>{user.name || user.email}</b><span>Rôle : {user.role}</span><a href="/" target="_blank" rel="noreferrer">Voir le site ↗</a><form method="post" action="/api/auth/logout"><button className="adm-out">Déconnexion</button></form></div></aside>
     <div className="adm-main"><header className="adm-top"><button className="adm-burger" onClick={() => setOpen(!open)} aria-label="Menu">☰</button><h1>{title}</h1><div className="adm-act">{actions}</div></header><div className="adm-body">{children}</div></div></div>);
 }
 export const Csrf = ({ user, back }) => (<><input type="hidden" name="csrf" value={user.csrf} />{back && <input type="hidden" name="back" value={back} />}</>);

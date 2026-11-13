@@ -1,12 +1,15 @@
 // Confirmation de paiement KKiaPay : la transaction est vérifiée côté serveur avant de marquer la commande « payée ».
 // Variables requises : KKIAPAY_PRIVATE_KEY et KKIAPAY_SECRET (la clé publique se règle dans Dashboard > Paramètres).
-import { q, one, settings } from '../../../lib/db';
+import { q, one, settings } from '../../../lib/db'; import { rateLimit } from '../../../lib/auth';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+  if (!(await rateLimit(req, 'pay', 20, 60))) return res.status(429).json({ error: 'Trop de tentatives.' });
   const { number, transactionId } = req.body || {};
   const o = await one('select id,total,status from orders where number=$1', [String(number || '')]);
   if (!o || !transactionId) return res.status(400).json({ error: 'Commande introuvable.' });
   if (o.status !== 'en_attente_paiement') return res.json({ ok: true });
+  // Une transaction ne peut payer qu'une seule commande
+  if (await one('select id from orders where payment_ref=$1', [String(transactionId).slice(0, 80)])) return res.status(409).json({ error: 'Cette transaction a déjà été utilisée.' });
   const s = await settings();
   if (!s.kkiapay_public_key || !process.env.KKIAPAY_PRIVATE_KEY || !process.env.KKIAPAY_SECRET) return res.status(503).json({ error: 'Paiement en ligne non configuré.' });
   const host = s.kkiapay_sandbox === '1' ? 'https://api-sandbox.kkiapay.me' : 'https://api.kkiapay.me';

@@ -1,7 +1,7 @@
 import Link from 'next/link'; import Admin, { Csrf, money, day } from '../../../../components/Admin'; import { E } from '../../../../lib/entities';
 export async function getServerSideProps(ctx) {
   const { requireAdmin } = require('../../../../lib/auth'); const a = await requireAdmin(ctx); if (a.redirect) return a;
-  const { q, plain } = require('../../../../lib/db'); const ent = E[ctx.params.entity]; if (!ent) return { notFound: true };
+  const { q, plain } = require('../../../../lib/db'); const ent = E[ctx.params.entity]; if (!ent || (ent.table === 'users' && a.user.role !== 'admin')) return { notFound: true };
   const w = []; const p = []; const s = String(ctx.query.q || '').trim();
   if (s && ent.search) { p.push(s); w.push('(' + ent.search.map((c) => `${c} ilike '%'||$1||'%'`).join(' or ') + ')'); }
   const rows = await q(`select * from ${ent.table} ${w.length ? 'where ' + w.join(' and ') : ''} order by ${ent.order || 'id desc'} limit 500`, p);

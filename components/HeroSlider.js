@@ -1,5 +1,5 @@
 import Link from 'next/link'; import { useEffect, useRef, useState, useCallback } from 'react';
-import { L, fmt } from '../lib/util';
+import { L, fmt, safeHref } from '../lib/util';
 
 // Bannière d'accueil en 4 slides : même logique sur chaque slide (badge, titre, texte, 2 boutons, éventail de cartes cliquables).
 export default function HeroSlider({ slides, lang, social = [], delay = 7000 }) {
@@ -48,7 +48,7 @@ export function buildSlides({ lang, blocks, collections, news, looks, fabrics })
   };
   return blocks.map((b, n) => {
     const auto = b.key === 'hero' && nc; const badge = L(b, 'badge', lang) || (auto ? `${fr ? 'Nouvelle Collection' : 'New Collection'} ${new Date().getFullYear()} · ${L(nc, 'name', lang)}` : L(b, 'title', lang));
-    return { short: L(b, 'badge', lang) || (auto ? (fr ? 'Nouvelle collection' : 'New collection') : L(b, 'title', lang)), accent: ACCENTS[n % ACCENTS.length], image: b.image, badge, badgeUrl: auto && !L(b, 'badge', lang) ? `/boutique?collection=${nc.slug}` : b.cta_url || '/boutique',
-      title: L(b, 'title', lang), text: L(b, 'text', lang), cta: L(b, 'cta', lang) || (fr ? 'Découvrir' : 'Discover'), ctaUrl: b.cta_url || '/boutique', cta2: L(b, 'cta2', lang), cta2Url: b.cta2_url || '/rendez-vous', cards: (cards[b.cards] || cards.collections)().filter((c) => c.image).slice(0, 4) };
+    return { short: L(b, 'badge', lang) || (auto ? (fr ? 'Nouvelle collection' : 'New collection') : L(b, 'title', lang)), accent: ACCENTS[n % ACCENTS.length], image: b.image, badge, badgeUrl: auto && !L(b, 'badge', lang) ? `/boutique?collection=${nc.slug}` : safeHref(b.cta_url, '/boutique'),
+      title: L(b, 'title', lang), text: L(b, 'text', lang), cta: L(b, 'cta', lang) || (fr ? 'Découvrir' : 'Discover'), ctaUrl: safeHref(b.cta_url, '/boutique'), cta2: L(b, 'cta2', lang), cta2Url: safeHref(b.cta2_url, '/rendez-vous'), cards: (cards[b.cards] || cards.collections)().filter((c) => c.image).slice(0, 4) };
   });
 }

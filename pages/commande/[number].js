@@ -2,7 +2,7 @@ import Script from 'next/script'; import { useState } from 'react';
 import Layout from '../../components/Layout'; import { Grid } from '../../components/ProductCard'; import { T } from '../../lib/i18n'; import { L, fmt } from '../../lib/util';
 export async function getServerSideProps(ctx) {
   const { one, plain } = require('../../lib/db'); const { common, suggestions } = require('../../lib/shop');
-  const o = await one('select number,status,items,subtotal,discount,shipping,total,payment_method,zone_name,first_name,last_name,phone,email,created_at from orders where number=$1', [ctx.params.number]);
+  const o = await one('select number,status,items,subtotal,discount,shipping,total,payment_method,zone_name,created_at from orders where number=$1', [String(ctx.params.number).slice(0, 40)]);
   if (!o) return { notFound: true };
   const { phone, email, last_name, first_name, ...pub } = o; // la page publique n'expose ni nom, ni téléphone, ni adresse
   return { props: plain({ common: await common(ctx), o: pub, sugg: await suggestions((o.items || []).map((i) => i.id), 4) }) };

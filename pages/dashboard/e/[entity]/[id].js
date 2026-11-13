@@ -1,7 +1,7 @@
 import Link from 'next/link'; import { useState } from 'react'; import Admin, { Csrf } from '../../../../components/Admin'; import { E, BLOCK_KEYS } from '../../../../lib/entities';
 export async function getServerSideProps(ctx) {
   const { requireAdmin } = require('../../../../lib/auth'); const a = await requireAdmin(ctx); if (a.redirect) return a;
-  const { q, one, plain } = require('../../../../lib/db'); const ent = E[ctx.params.entity]; if (!ent) return { notFound: true };
+  const { q, one, plain } = require('../../../../lib/db'); const ent = E[ctx.params.entity]; if (!ent || (ent.table === 'users' && a.user.role !== 'admin')) return { notFound: true };
   const isNew = ctx.params.id === 'new'; let row = {};
   if (!isNew) { row = await one(`select * from ${ent.table} where id=$1`, [Number(ctx.params.id) || 0]); if (!row) return { notFound: true }; delete row.pass_hash; }
   else { for (const f of ent.fields) if (f.def !== undefined) row[f.n] = f.def; if (ent.parent && ctx.query[ent.parent]) row[ent.parent] = Number(ctx.query[ent.parent]); }

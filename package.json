@@ -1,6 +1,6 @@
 {
   "name": "edisessi-v2",
-  "version": "2.0.0",
+  "version": "2.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,14 +8,19 @@
     "start": "next start",
     "import:ancien-site": "node scripts/import-ancien-site.mjs"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@electric-sql/pglite": "^0.2.17",
     "formidable": "^3.5.2",
-    "next": "^14.2.35",
+    "next": "15.5.29",
     "pg": "^8.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sharp": "^0.33.5"
+    "sharp": "^0.35.5"
+  },
+  "overrides": {
+    "postcss": "^8.5.23"
   }
 }

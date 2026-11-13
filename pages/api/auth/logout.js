@@ -1,2 +1,3 @@
 import { cookie } from '../../../lib/auth';
-export default function handler(req, res) { res.setHeader('Set-Cookie', cookie('', 0)); res.redirect(303, '/login'); }
+// Déconnexion par POST uniquement : un simple lien externe ne peut pas déconnecter l'administrateur.
+export default function handler(req, res) { if (req.method !== 'POST') return res.status(405).end(); res.setHeader('Set-Cookie', cookie('', 0)); res.redirect(303, '/login'); }

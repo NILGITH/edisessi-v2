@@ -18,3 +18,4 @@
 .login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#141414,#3a2f10);padding:20px}.login form{width:100%;max-width:380px}.login h1{font-size:1.3rem}
 @media(max-width:900px){.adm-side{position:fixed;left:-250px;z-index:60;transition:.2s}.adm-side.open{left:0}.adm-burger{display:block}.kpis{grid-template-columns:1fr 1fr}.aform{grid-template-columns:1fr}.adm-body{padding:14px}.multi-l{grid-template-columns:1fr}}
 @media print{.adm-side,.adm-top{display:none}}
+.adm-out{color:#ffd87d;padding:4px 0;font-size:.82rem;text-align:left}

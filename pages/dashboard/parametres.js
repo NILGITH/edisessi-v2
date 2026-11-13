@@ -1,5 +1,5 @@
 import Admin, { Csrf } from '../../components/Admin';
-export async function getServerSideProps(ctx) { const { requireAdmin } = require('../../lib/auth'); const a = await requireAdmin(ctx); if (a.redirect) return a; const { settings, plain } = require('../../lib/db'); const s = await settings(); delete s.session_secret; return { props: plain({ user: a.user, s, ok: !!ctx.query.ok, msg: String(ctx.query.msg || '').slice(0, 300) }) }; }
+export async function getServerSideProps(ctx) { const { requireAdmin } = require('../../lib/auth'); const a = await requireAdmin(ctx, { admin: true }); if (a.redirect) return a; const { settings, plain } = require('../../lib/db'); const s = await settings(); delete s.session_secret; return { props: plain({ user: a.user, s, ok: !!ctx.query.ok, msg: String(ctx.query.msg || '').slice(0, 300) }) }; }
 const G = [
   ['Coordonnées', [['phone', 'Téléphone affiché'], ['whatsapp', 'Numéro WhatsApp (chiffres, avec indicatif)'], ['email', 'Email'], ['address', 'Adresse'], ['hours_fr', 'Horaires (Français)'], ['hours_en', 'Horaires (English)'], ['logo', 'Adresse du logo']]],
   ['Réseaux sociaux (accueil et bas de page)', [['instagram', 'Instagram'], ['facebook', 'Facebook'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['linkedin', 'LinkedIn']]],

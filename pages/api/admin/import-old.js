@@ -1,9 +1,9 @@
 // Import du catalogue de l'ancien site (produits et catégories), puis rapatriement des images par petits lots.
 import { q, one } from '../../../lib/db'; import { guard, safeBack } from '../../../lib/adminApi'; import { slugify } from '../../../lib/util'; import { saveImage } from '../../../lib/storage';
 export const config = { maxDuration: 60 };
-const OLD = /edisessi\.com|nnussjkeoppiuhpzasxv/;
+const OLD = { test: (u) => { try { const h = new URL(u); return h.protocol === 'https:' && (h.hostname === 'www.edisessi.com' || h.hostname === 'edisessi.com' || h.hostname === 'nnussjkeoppiuhpzasxv.supabase.co'); } catch { return false; } } }; // hôtes autorisés uniquement
 export default async function handler(req, res) {
-  const b = req.body || {}; if (!(await guard(req, res, b.csrf))) return;
+  const b = req.body || {}; if (!(await guard(req, res, b.csrf, { admin: true }))) return;
   const done = (m) => res.redirect(303, safeBack('/dashboard/parametres?msg=' + encodeURIComponent(m), '/dashboard/parametres'));
   try {
     if (b.step === 'products') {
