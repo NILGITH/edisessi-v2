@@ -19,7 +19,7 @@ export default function HeroSlider({ slides, lang, social = [], delay = 7000 }) 
               <Link href={s.badgeUrl || s.ctaUrl} className="hs-badge" tabIndex={n === i ? 0 : -1}>✦ {s.badge} →</Link>
               <h2 className="hs-title">{s.title.split(' ').map((w, k) => <span key={k} style={{ '--d': `${120 + k * 55}ms` }}>{w}&nbsp;</span>)}</h2>
               <p className="hs-text">{s.text}</p>
-              <div className="row hs-btns"><Link href={s.ctaUrl} className="btn gold lg" tabIndex={n === i ? 0 : -1}>{s.cta}</Link><Link href={s.cta2Url} className="btn line lg" tabIndex={n === i ? 0 : -1}>{s.cta2}</Link></div>
+              <div className="row hs-btns"><Link href={s.ctaUrl} className="btn gold lg" tabIndex={n === i ? 0 : -1}>{s.cta}</Link>{s.cta2 && <Link href={s.cta2Url} className="btn line lg" tabIndex={n === i ? 0 : -1}>{s.cta2}</Link>}</div>
               {n === 0 && social.length > 0 && <div className="soc light hs-soc">{social.map(([l, u]) => <a key={l} href={u} target="_blank" rel="noopener noreferrer">{l}</a>)}</div>}
             </div>
             <div className="hs-fan">{s.cards.slice(0, 4).map((c, k, a) => (
@@ -29,31 +29,26 @@ export default function HeroSlider({ slides, lang, social = [], delay = 7000 }) 
         </div>))}
       <div className="hs-nav wrap">
         <button className="hs-arrow" onClick={() => go(i - 1)} aria-label={lang === 'fr' ? 'Slide précédente' : 'Previous slide'}>←</button>
-        <div className="hs-dots">{slides.map((s, n) => <button key={n} className={n === i ? 'on' : ''} onClick={() => go(n)} aria-label={`Slide ${n + 1}`}><i key={n === i ? tick : 'x'} style={{ animationDuration: delay + 'ms' }} /><b>{String(n + 1).padStart(2, '0')}</b><span>{s.short}</span></button>)}</div>
+        <div className="hs-dots" style={{ gridTemplateColumns: `repeat(${slides.length},1fr)` }}>{slides.map((s, n) => <button key={n} className={n === i ? 'on' : ''} onClick={() => go(n)} aria-label={`Slide ${n + 1}`}><i key={n === i ? tick : 'x'} style={{ animationDuration: delay + 'ms' }} /><b>{String(n + 1).padStart(2, '0')}</b><span>{s.short}</span></button>)}</div>
         <button className="hs-arrow" onClick={() => go(i + 1)} aria-label={lang === 'fr' ? 'Slide suivante' : 'Next slide'}>→</button>
       </div>
     </section>
   );
 }
 
-// Construit les 4 slides à partir des données du site (collections, nouveautés, looks, matières).
-export function buildSlides({ lang, hero, collections, news, looks, fabrics }) {
-  const fr = lang === 'fr'; const OLD = 'https://www.edisessi.com/images/'; const nc = collections.find((c) => c.is_new) || collections[0];
-  return [
-    { short: fr ? 'Nouvelle collection' : 'New collection', accent: '#ffd87d', image: (hero && hero.image) || OLD + 'hero2.webp', badge: `${fr ? 'Nouvelle Collection' : 'New Collection'} ${new Date().getFullYear()} · ${L(nc, 'name', lang)}`, badgeUrl: `/boutique?collection=${nc.slug}`,
-      title: hero ? L(hero, 'title', lang) : '', text: hero ? L(hero, 'text', lang) : '', cta: fr ? 'Acheter la collection' : 'Shop the collection', ctaUrl: `/boutique?collection=${nc.slug}`, cta2: fr ? 'Prendre rendez-vous' : 'Book an appointment', cta2Url: '/rendez-vous',
-      cards: collections.map((c) => ({ image: c.image, label: L(c, 'name', lang), url: `/boutique?collection=${c.slug}` })) },
-    { short: fr ? 'Nouveautés' : 'New arrivals', accent: '#ff9a6b', image: OLD + 'store1.webp', badge: fr ? 'Nouveautés de l’atelier' : 'Fresh from the workshop', badgeUrl: '/boutique',
-      title: fr ? 'Les dernières pièces, prêtes à être portées' : 'The latest pieces, ready to wear', text: fr ? 'Chaque semaine, de nouvelles créations rejoignent la boutique. Prix affichés en FCFA, euros et dollars, livraison au Bénin et à l’international.' : 'New creations join the shop every week. Prices in FCFA, euros and dollars, delivered in Benin and worldwide.',
-      cta: fr ? 'Voir les nouveautés' : 'See new arrivals', ctaUrl: '/boutique', cta2: fr ? 'Rayon Hommes' : 'Menswear', cta2Url: '/boutique?genre=homme',
-      cards: news.map((p) => ({ image: (p.images || [])[0], label: L(p, 'name', lang), price: p.price, url: '/boutique/' + p.slug })) },
-    { short: fr ? 'Sur-mesure' : 'Made-to-measure', accent: '#f3e3a8', image: OLD + 'grande-mesure.jpeg', badge: fr ? 'Sur-mesure et Grande Mesure' : 'Made-to-measure and Bespoke', badgeUrl: '/rendez-vous',
-      title: fr ? 'Une pièce pensée pour vous, et pour vous seule' : 'A piece designed for you, and you alone', text: fr ? 'Choisissez un modèle à adapter à vos mesures, ou confiez-nous une création unique. À Cotonou ou à distance, nos stylistes vous accompagnent.' : 'Pick a design adapted to your measurements, or entrust us with a one-of-a-kind creation. In Cotonou or remotely, our stylists guide you.',
-      cta: fr ? 'Prendre rendez-vous' : 'Book an appointment', ctaUrl: '/rendez-vous', cta2: fr ? 'Voir la galerie' : 'See the gallery', cta2Url: '/galeries',
-      cards: looks.map((l) => ({ image: l.image, label: l.kind === 'homme' ? (fr ? 'Look homme' : 'Men’s look') : (fr ? 'Look femme' : 'Women’s look'), url: '/galeries' })) },
-    { short: fr ? '30 ans de la Maison' : '30 years', accent: '#ffb38a', image: OLD + 'history4.jpg', badge: fr ? '30 ans de création' : '30 years of creation', badgeUrl: '/coulisses',
-      title: fr ? 'Trente ans d’élégance, et des tissus qui racontent le Bénin' : 'Thirty years of elegance, and fabrics that tell Benin’s story', text: fr ? 'Depuis Windiya, son défilé fondateur, la Maison sublime les étoffes du pays et soutient les nouveaux créateurs. Découvrez nos matières signatures et les coulisses des 30 ans.' : 'Since Windiya, her founding show, the House has elevated local cloths and supported new designers. Discover our signature fabrics and the 30th anniversary backstage.',
-      cta: fr ? 'Découvrir l’histoire' : 'Discover the story', ctaUrl: '/history', cta2: fr ? 'Les coulisses' : 'Backstage', cta2Url: '/coulisses',
-      cards: [...fabrics.map((f) => ({ image: f.image, label: L(f, 'name', lang), url: '/matieres/' + f.slug })), { image: OLD + 'history2.jpg', label: fr ? 'Notre histoire' : 'Our story', url: '/history' }] },
-  ];
+// Construit les slides à partir des blocs « hero » et « slide » de la page d'accueil (modifiables dans le dashboard).
+const ACCENTS = ['#ffd87d', '#ff9a6b', '#f3e3a8', '#ffb38a'];
+export function buildSlides({ lang, blocks, collections, news, looks, fabrics }) {
+  const fr = lang === 'fr'; const nc = collections.find((c) => c.is_new) || collections[0];
+  const cards = {
+    collections: () => collections.map((c) => ({ image: c.image, label: L(c, 'name', lang), url: `/boutique?collection=${c.slug}` })),
+    nouveautes: () => news.map((p) => ({ image: (p.images || [])[0], label: L(p, 'name', lang), price: p.price, url: '/boutique/' + p.slug })),
+    looks: () => looks.map((l) => ({ image: l.image, label: l.kind === 'homme' ? (fr ? 'Look homme' : 'Men’s look') : (fr ? 'Look femme' : 'Women’s look'), url: '/galeries' })),
+    matieres: () => fabrics.map((f) => ({ image: f.image, label: L(f, 'name', lang), url: '/matieres/' + f.slug })),
+  };
+  return blocks.map((b, n) => {
+    const auto = b.key === 'hero' && nc; const badge = L(b, 'badge', lang) || (auto ? `${fr ? 'Nouvelle Collection' : 'New Collection'} ${new Date().getFullYear()} · ${L(nc, 'name', lang)}` : L(b, 'title', lang));
+    return { short: L(b, 'badge', lang) || (auto ? (fr ? 'Nouvelle collection' : 'New collection') : L(b, 'title', lang)), accent: ACCENTS[n % ACCENTS.length], image: b.image, badge, badgeUrl: auto && !L(b, 'badge', lang) ? `/boutique?collection=${nc.slug}` : b.cta_url || '/boutique',
+      title: L(b, 'title', lang), text: L(b, 'text', lang), cta: L(b, 'cta', lang) || (fr ? 'Découvrir' : 'Discover'), ctaUrl: b.cta_url || '/boutique', cta2: L(b, 'cta2', lang), cta2Url: b.cta2_url || '/rendez-vous', cards: (cards[b.cards] || cards.collections)().filter((c) => c.image).slice(0, 4) };
+  });
 }
